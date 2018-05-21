@@ -2,9 +2,10 @@
 
 ---  
   # Change hosts to target group
-  - hosts: test
+  - hosts: "{{ play_hosts }}"
     # Ensure target machines have ansible user (re: run add_ansible_user.yaml)
-    remote_user: ansible
+    remote_user: "{{ remote_ssh_user }}"
+    become: True
     tasks:
 
        - name: Ensure InfluxData repo exists
@@ -13,14 +14,11 @@
            state: present
            regexp: 'repos.influxdata.com'
            line: deb https://repos.influxdata.com/{{ hostvars[inventory_hostname]['ansible_distribution']|lower }} {{ hostvars[inventory_hostname]['ansible_distribution_release'] }} stable
-         become: true
-
 
        - name: Add InfluxData package key
          apt_key:
            url:  https://repos.influxdata.com/influxdb.key
            state: present
-         become: true
 
        - name: Update repositories cache and install "telegraf" package
          apt:
@@ -28,5 +26,3 @@
            update_cache: yes
            state: latest
            # allow_unauthenticated: yes
-         become: true
-
